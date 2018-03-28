@@ -7,10 +7,11 @@ $file = 'image.jpg';
 $name = 'Image.jpg';
 $mine = 'image/jpg';
 
-if(is_file($pastaDrive.'/'.$file['dfi_nome'])){
+if(is_file($pastaDrive.'/'.$file)){
 
-	$lastModified = filemtime($pastaDrive.'/'.$file['dfi_nome']);
-	$etagFile = md5_file($pastaDrive.'/'.$file['dfi_nome']);
+	$lastModified = filemtime($pastaDrive.'/'.$file);
+	$etagFile = md5_file($pastaDrive.'/'.$file);
+	$filesize = filesize($folder.'/'.$file);
 
 	// EXECUÇÃO INFINITA
 	set_time_limit(0);
@@ -45,16 +46,16 @@ if(is_file($pastaDrive.'/'.$file['dfi_nome'])){
 	}
 
 	// NORMAL HEADER
-	header('Content-Disposition: '.$disposition.'; filename="'.utf8_encode($file['dfi_nome_real']).'"');
-	header('Content-Length:'.$file['dfi_tamanho']);
+	header('Content-Disposition: '.$disposition.'; filename="'.utf8_encode($name).'"');
+	header('Content-Length:'.$filesize);
 	header('Content-Transfer-Encoding: Binary');
-	header('Content-Type: '.$file['dfi_mime'].';');
+	header('Content-Type: '.$mimeType.';');
 	header('Etag: '.$etagFile);
 	header('Expires: '. gmdate('D, d M Y H:i:s \G\M\T', time() + 2592000));
 	header('Last-Modified: '.gmdate('D, d M Y H:i:s', $lastModified).' GMT');
 
 	// DOWNLOAD BY BUFFER
-	$fd = fopen ($pastaDrive.'/'.$file['dfi_nome'], 'rb');
+	$fd = fopen ($pastaDrive.'/'.$file, 'rb');
 	while(!feof($fd)) {
 		$buffer = fread($fd, 2048);
 		echo $buffer;
