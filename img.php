@@ -7,14 +7,10 @@ $file = 'image.jpg';
 $name = 'Image.jpg';
 $mine = 'image/jpg';
 
-if(is_file($folder.'/'.$file)){
+if(is_file($pastaDrive.'/'.$file['dfi_nome'])){
 
-	// RECUPERA HEADERS
-	$headers = getallheaders();
-
-	$lastModified 	= filemtime($folder.'/'.$file);
-	$etagFile 		= md5_file($folder.'/'.$file);
-	$filesize 		= filesize($folder.'/'.$file);
+	$lastModified = filemtime($pastaDrive.'/'.$file['dfi_nome']);
+	$etagFile = md5_file($pastaDrive.'/'.$file['dfi_nome']);
 
 	// EXECUÇÃO INFINITA
 	set_time_limit(0);
@@ -23,36 +19,45 @@ if(is_file($folder.'/'.$file)){
 	session_write_close();
 
 	// FORMA: INLINE OU DOWNLOAD
-	$disposition = 'attachment';
+	$disposition = 'inline';
 	if(isset($_GET['inline'])){
 		$disposition = 'inline';
 	}
+	if(isset($_GET['download'])){
+		$disposition = 'attachment';
+	}
 
-	// SEGUNDA VEZ, MANTER EM CACHE
-	if($disposition == 'inline' and (!isset($headers['Cache-Control']) or $headers['Cache-Control'] == 'max-age=0')){
+	// DOWNLOAD
+	if($disposition == 'attachment'){
 
-		header("HTTP/1.1 304 Not Modified");
-		header('Cache-Control: max-age=2592000');
+		header('Cache-Control: no-cache');
 
-	// PRIMEIRA VEZ OU DOWNLOAD DO ARQUIVO
+	}else if(isset($_SERVER['HTTP_IF_MODIFIED_SINCE'])){
+
+		header('Last-Modified: '.$_SERVER['HTTP_IF_MODIFIED_SINCE'], true, 304);
+		header('Cache-Control: private, max-age=2592000');
+		exit;
+
 	}else{
-		header('Cache-Control: max-age=0');
+
+		header('Cache-Control: private, max-age=2592000');
+
 	}
 
 	// NORMAL HEADER
+	header('Content-Disposition: '.$disposition.'; filename="'.utf8_encode($file['dfi_nome_real']).'"');
+	header('Content-Length:'.$file['dfi_tamanho']);
 	header('Content-Transfer-Encoding: Binary');
-	header('Last-Modified: '.gmdate('D, d M Y H:i:s', $lastModified).' GMT');
-	header('Content-Type: '.$mine.';');
-	header('Content-Length: '.$filesize);
+	header('Content-Type: '.$file['dfi_mime'].';');
 	header('Etag: '.$etagFile);
-	header('Content-disposition: '.$disposition.'; filename="'.utf8_encode($name).'"');
+	header('Expires: '. gmdate('D, d M Y H:i:s \G\M\T', time() + 2592000));
+	header('Last-Modified: '.gmdate('D, d M Y H:i:s', $lastModified).' GMT');
 
 	// DOWNLOAD BY BUFFER
-	$fd = fopen ($folder.'/'.$file, 'rb');
+	$fd = fopen ($pastaDrive.'/'.$file['dfi_nome'], 'rb');
 	while(!feof($fd)) {
 		$buffer = fread($fd, 2048);
 		echo $buffer;
 	}
 	fclose ($fd);
-
 }
