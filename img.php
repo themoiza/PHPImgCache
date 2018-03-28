@@ -9,8 +9,8 @@ $mine = 'image/jpg';
 
 if(is_file($pastaDrive.'/'.$file)){
 
-	$lastModified = filemtime($pastaDrive.'/'.$file);
-	$etagFile = md5_file($pastaDrive.'/'.$file);
+	$lastModified = filemtime($folder.'/'.$file);
+	$etagFile = md5_file($folder.'/'.$file);
 	$filesize = filesize($folder.'/'.$file);
 
 	// EXECUÇÃO INFINITA
